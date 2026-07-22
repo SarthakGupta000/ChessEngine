@@ -21,24 +21,26 @@ struct StringArray {
     size_t size;
 };
 
+int getOutOfBound(int x, int y);
+
 struct GameState *createGame();
 
 void destroyGame(struct GameState *game);
 
-struct StringArray getPawnMoves(struct GameState *game, int turn);
+struct StringArray getPawnMoves(struct GameState *game);
 
-struct StringArray getRookMoves(struct GameState *game, int turn);
+struct StringArray getRookMoves(struct GameState *game);
 
-struct StringArray getKnightMoves(struct GameState *game, int turn);
+struct StringArray getKnightMoves(struct GameState *game);
 
-struct StringArray getBishopMoves(struct GameState *game, int turn);
+struct StringArray getBishopMoves(struct GameState *game);
 
-struct StringArray getQueenMoves(struct GameState *game, int turn);
+struct StringArray getQueenMoves(struct GameState *game);
 
-struct StringArray getKingMoves(struct GameState *game, int turn);
+struct StringArray getKingMoves(struct GameState *game);
 
-char *getCheck(struct GameState *game, int turn); // returns "0" if not and the piece if the king is in check
+char *getCheck(struct GameState *game); // returns "0" if not and the piece if the king is in check
 
-struct StringArray getAllMoves(struct GameState *game, int turn); // returns the NULL struct if checkmate
+struct StringArray getAllMoves(struct GameState *game); // returns the NULL struct if checkmate
 
 void run();
