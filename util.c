@@ -51,17 +51,17 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y - 2, x) == 0) {
-                        if (game->board[(y - 2)][x] == 0 && y == 6) {
+                        if (game->board[(y - 2)][x] == 0 && y == 6 && game->board[(y - 1)][x] == 0) {
                             numOfMoves++;
                         }
                     }
                     if (getOutOfBound(y - 1, x + 1) == 0) {
-                        if (game->board[(y - 1)][(x + 1)] != 0) {
+                        if (game->board[(y - 1)][(x + 1)] < 0) {
                             numOfMoves++;
                         }
                     }
                     if (getOutOfBound(y - 1, x - 1) == 0) {
-                        if (game->board[(y - 1)][(x - 1)] != 0) {
+                        if (game->board[(y - 1)][(x - 1)] < 0) {
                             numOfMoves++;
                         }
                     }
@@ -73,17 +73,17 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y + 2, x) == 0) {
-                        if (game->board[(y + 2)][x] == 0 && y == 1) {
+                        if (game->board[(y + 2)][x] == 0 && y == 1 && game->board[(y + 1)][x] == 0) {
                             numOfMoves++;
                         }
                     }
                     if (getOutOfBound(y + 1, x + 1) == 0) {
-                        if (game->board[(y + 1)][(x + 1)] != 0) {
+                        if (game->board[(y + 1)][(x + 1)] > 0) {
                             numOfMoves++;
                         }
                     }
                     if (getOutOfBound(y + 1, x - 1) == 0) {
-                        if (game->board[(y + 1)][(x - 1)] != 0) {
+                        if (game->board[(y + 1)][(x - 1)] > 0) {
                             numOfMoves++;
                         }
                     }
@@ -114,7 +114,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y - 2, x) == 0) {
-                        if (game->board[(y - 2)][x] == 0 && y == 6) {
+                        if (game->board[(y - 2)][x] == 0 && y == 6 && game->board[(y - 1)][x] == 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
@@ -125,7 +125,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y - 1, x + 1) == 0) {
-                        if (game->board[(y - 1)][(x + 1)] != 0) {
+                        if (game->board[(y - 1)][(x + 1)] < 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
@@ -136,7 +136,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y - 1, x - 1) == 0) {
-                        if (game->board[(y - 1)][(x - 1)] != 0) {
+                        if (game->board[(y - 1)][(x - 1)] < 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
@@ -160,18 +160,18 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y + 2, x) == 0) {
-                        if (game->board[(y + 2)][x] == 0 && y == 1) {
+                        if (game->board[(y + 2)][x] == 0 && y == 1 && game->board[(y + 1)][x] == 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
                             moves.arr[next][3] = convert[x];
-                            moves.arr[next][4] = convert[(y + 1)];
+                            moves.arr[next][4] = convert[(y + 2)];
                             moves.arr[next][5] = '\0';
                             next++;
                         }
                     }
                     if (getOutOfBound(y + 1, x + 1) == 0) {
-                        if (game->board[(y + 1)][(x + 1)] != 0) {
+                        if (game->board[(y + 1)][(x + 1)] > 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
@@ -182,7 +182,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(y + 1, x - 1) == 0) {
-                        if (game->board[(y + 1)][(x - 1)] != 0) {
+                        if (game->board[(y + 1)][(x - 1)] > 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
