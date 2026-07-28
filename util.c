@@ -366,3 +366,66 @@ struct StringArray getRookMoves(struct GameState *game) {
     }
     return moves;
 }
+
+struct StringArray getKnightMoves(struct GameState *game) {
+    int numOfMoves = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->turn * 3 == game->board[y][x]) {
+                int offsets[8][2] = {
+                    {2, 1},
+                    {2, -1},
+                    {-2, -1},
+                    {-2, 1},
+                    {1, 2},
+                    {-1, 2},
+                    {1, -2},
+                    {-1, -2}
+                };
+                for (int i = 0; i < 8; i++) {
+                    int currentx = x + offsets[i][0];
+                    int currenty = y + offsets[i][1];
+                    if (getOutOfBound(currentx, currenty) == 0) {
+                        numOfMoves++;
+                    }
+                }
+            }
+        }
+    }
+    struct StringArray moves;
+    moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
+    moves.size = numOfMoves;
+    for (int i = 0; i < numOfMoves; i++) {
+        moves.arr[i] = (char *) malloc(sizeof(char) * 6);
+    }
+    int next = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->turn * 3 == game->board[y][x]) {
+                int offsets[8][2] = {
+                    {2, 1},
+                    {2, -1},
+                    {-2, -1},
+                    {-2, 1},
+                    {1, 2},
+                    {-1, 2},
+                    {1, -2},
+                    {-1, -2}
+                };
+                for (int i = 0; i < 8; i++) {
+                    int currentx = x + offsets[i][0];
+                    int currenty = y + offsets[i][1];
+                    if (getOutOfBound(currentx, currenty) == 0) {
+                        moves.arr[next][0] = 'K';
+                        moves.arr[next][1] = convert[x];
+                        moves.arr[next][2] = convert[y];
+                        moves.arr[next][3] = convert[currentx];
+                        moves.arr[next][4] = convert[currenty];
+                        moves.arr[next][5] = '\0';
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
