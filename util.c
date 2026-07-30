@@ -199,7 +199,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
     return moves;
 }
 
-struct StringArray getRookMoves(struct GameState *game) {
+struct StringArray getRookMoves(struct GameState *game) { // can be simplified a lot
     int numOfMoves = 0;
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
@@ -412,6 +412,87 @@ struct StringArray getKnightMoves(struct GameState *game) {
                         moves.arr[next][3] = convert[currentx];
                         moves.arr[next][4] = convert[currenty];
                         moves.arr[next][5] = '\0';
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
+
+struct StringArray getBishopMoves(struct GameState *game) {
+    int numOfMoves = 0;
+    int offsets[4][2] = {
+        {-1, -1},
+        {1, 1},
+        {-1, 1},
+        {1, -1}
+    };
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->turn * 4 == game->board[y][x]) {
+                for (int i = 0; i < 4; i++) {
+                    int scale = 1;
+                    while (1) {
+                        if (getOutOfBound((x + (offsets[i][0] * scale)), (y + (offsets[i][1] * scale))) == 0) {
+                            break;
+                        }
+                        if ((game->turn > 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] > 0) || (game->turn < 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] < 0)) {
+                            break;
+                        }
+                        if (game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] == 0) {
+                            numOfMoves++;
+                            scale++;
+                            continue;
+                        }
+                        if ((game->turn > 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] < 0) || (game->turn < 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] > 0)) {
+                            numOfMoves++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    struct StringArray moves;
+    moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
+    for (int i = 0; i < numOfMoves; i++) {
+        moves.arr[i] = (char *) malloc(sizeof(char) * 6);
+    }
+    int next = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->turn * 4 == game->board[y][x]) {
+                for (int i = 0; i < 4; i++) {
+                    int scale = 1;
+                    while (1) {
+                        if (getOutOfBound((x + (offsets[i][0] * scale)), (y + (offsets[i][1] * scale))) == 0) {
+                            break;
+                        }
+                        if ((game->turn > 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] > 0) || (game->turn < 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] < 0)) {
+                            break;
+                        }
+                        if (game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] == 0) {
+                            moves.arr[next][0] = 'B';
+                            moves.arr[next][1] = convert[x];
+                            moves.arr[next][2] = convert[y];
+                            moves.arr[next][3] = convert[(x + (offsets[i][0] * scale))];
+                            moves.arr[next][4] = convert[(y + (offsets[i][1] * scale))];
+                            moves.arr[next][5] = '\0';
+                            next++;
+                            scale++;
+                            continue;
+                        }
+                        if ((game->turn > 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] < 0) || (game->turn < 0 && game->board[(y + (offsets[i][1] * scale))][(x + (offsets[i][0] * scale))] > 0)) {
+                            moves.arr[next][0] = 'B';
+                            moves.arr[next][1] = convert[x];
+                            moves.arr[next][2] = convert[y];
+                            moves.arr[next][3] = convert[(x + (offsets[i][0] * scale))];
+                            moves.arr[next][4] = convert[(y + (offsets[i][1] * scale))];
+                            moves.arr[next][5] = '\0';
+                            next++;
+                            break;
+                        }
                     }
                 }
             }
