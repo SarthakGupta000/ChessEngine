@@ -369,23 +369,23 @@ struct StringArray getRookMoves(struct GameState *game) {
 
 struct StringArray getKnightMoves(struct GameState *game) {
     int numOfMoves = 0;
+    int offsets[8][2] = {
+        {2, 1},
+        {2, -1},
+        {-2, -1},
+        {-2, 1},
+        {1, 2},
+        {-1, 2},
+        {1, -2},
+        {-1, -2}
+    };
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
             if (game->turn * 3 == game->board[y][x]) {
-                int offsets[8][2] = {
-                    {2, 1},
-                    {2, -1},
-                    {-2, -1},
-                    {-2, 1},
-                    {1, 2},
-                    {-1, 2},
-                    {1, -2},
-                    {-1, -2}
-                };
                 for (int i = 0; i < 8; i++) {
                     int currentx = x + offsets[i][0];
                     int currenty = y + offsets[i][1];
-                    if (getOutOfBound(currentx, currenty) == 0) {
+                    if (getOutOfBound(currentx, currenty) == 0 && (game->board[currenty][currentx] == 0 || (((game->board[currenty][currentx] > 0) && (game->turn < 0)) || ((game->board[currenty][currentx] < 0) && (game->turn > 0))))) {
                         numOfMoves++;
                     }
                 }
@@ -402,20 +402,10 @@ struct StringArray getKnightMoves(struct GameState *game) {
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
             if (game->turn * 3 == game->board[y][x]) {
-                int offsets[8][2] = {
-                    {2, 1},
-                    {2, -1},
-                    {-2, -1},
-                    {-2, 1},
-                    {1, 2},
-                    {-1, 2},
-                    {1, -2},
-                    {-1, -2}
-                };
                 for (int i = 0; i < 8; i++) {
                     int currentx = x + offsets[i][0];
                     int currenty = y + offsets[i][1];
-                    if (getOutOfBound(currentx, currenty) == 0) {
+                    if (getOutOfBound(currentx, currenty) == 0&& (game->board[currenty][currentx] == 0 || (((game->board[currenty][currentx] > 0) && (game->turn < 0)) || ((game->board[currenty][currentx] < 0) && (game->turn > 0))))) {
                         moves.arr[next][0] = 'K';
                         moves.arr[next][1] = convert[x];
                         moves.arr[next][2] = convert[y];
