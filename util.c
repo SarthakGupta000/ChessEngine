@@ -1,6 +1,6 @@
 #include "util.h"
 
-char convert[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+char convert[10] = "0123456789";
 
 int getOutOfBound(int x, int y) {
     if (x < 0 || x >= 8 || y < 0 || y >= 8) {
@@ -320,7 +320,7 @@ struct StringArray getKnightMoves(struct GameState *game) {
                     int currentx = x + offsets[i][0];
                     int currenty = y + offsets[i][1];
                     if (getOutOfBound(currentx, currenty) == 0&& (game->board[currenty][currentx] == 0 || (((game->board[currenty][currentx] > 0) && (game->turn < 0)) || ((game->board[currenty][currentx] < 0) && (game->turn > 0))))) {
-                        moves.arr[next][0] = 'K';
+                        moves.arr[next][0] = 'N';
                         moves.arr[next][1] = convert[x];
                         moves.arr[next][2] = convert[y];
                         moves.arr[next][3] = convert[currentx];
@@ -418,7 +418,7 @@ struct StringArray getBishopMoves(struct GameState *game) {
 
 struct StringArray getQueenMoves(struct GameState *game) {
     int numOfMoves = 0;
-    int offsets[4][2] = {
+    int offsets[8][2] = {
         {-1, -1},
         {1, 1},
         {-1, 1},
@@ -494,6 +494,80 @@ struct StringArray getQueenMoves(struct GameState *game) {
                             next++;
                             break;
                         }
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
+
+struct StringArray getKingMoves(struct GameState *game) {
+    int numOfMoves = 0;
+    int offsets[8][2] = {
+        {-1, -1},
+        {1, 1},
+        {-1, 1},
+        {1, -1},
+        {1, 0},
+        {0, 1},
+        {-1, 0},
+        (0, -1)
+    };
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->turn * 10 == game->board[y][x]) { // this is the king
+                for (int i = 0; i < 8; i++) {
+                    int currentx = x + offsets[i][0];
+                    int currenty = x + offsets[i][1];
+                    if (getOutOfBound(currentx, currenty) == 0) {
+                        continue;
+                    }
+                    if (game->board[currenty][currentx] == 0) {
+                        numOfMoves++;
+                        continue;
+                    }
+                    if ((game->board[currenty][currentx] > 0 && game->board[y][x] < 0) || (game->board[currenty][currentx] < 0 && game->board[y][x] > 0)) {
+                        numOfMoves++;
+                    }
+                }
+            }
+        }
+    }
+    struct StringArray moves;
+    moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
+    moves.size = numOfMoves;
+    for (int i = 0; i < numOfMoves; i++) {
+        moves.arr[i] = (char *) malloc(sizeof(char) * 6);
+    }
+    int next = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->turn * 10 == game->board[y][x]) {
+                for (int i = 0; i < 8; i++) {
+                    int currentx = x + offsets[i][0];
+                    int currenty = x + offsets[i][1];
+                    if (getOutOfBound(currentx, currenty) == 0) {
+                        continue;
+                    }
+                    if (game->board[currenty][currentx] == 0) {
+                        moves.arr[next][0] = 'K';
+                        moves.arr[next][1] = convert[x];
+                        moves.arr[next][2] = convert[y];
+                        moves.arr[next][3] = convert[(x + (offsets[i][0]))];
+                        moves.arr[next][4] = convert[(y + (offsets[i][1]))];
+                        moves.arr[next][5] = '\0';
+                        next++;
+                        continue;
+                    }
+                    if ((game->board[currenty][currentx] > 0 && game->board[y][x] < 0) || (game->board[currenty][currentx] < 0 && game->board[y][x] > 0)) {
+                        moves.arr[next][0] = 'K';
+                        moves.arr[next][1] = convert[x];
+                        moves.arr[next][2] = convert[y];
+                        moves.arr[next][3] = convert[(x + (offsets[i][0]))];
+                        moves.arr[next][4] = convert[(y + (offsets[i][1]))];
+                        moves.arr[next][5] = '\0';
+                        next++;
                     }
                 }
             }
