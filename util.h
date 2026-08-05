@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /*
 -5 -3 -4 -9 -10 -4 -3 -5
@@ -21,6 +22,8 @@ struct StringArray {
     size_t size;
 };
 
+int getNum(char letter);
+
 int getOutOfBound(int x, int y);
 
 struct GameState *createGame();
@@ -39,7 +42,12 @@ struct StringArray getQueenMoves(struct GameState *game);
 
 struct StringArray getKingMoves(struct GameState *game);
 
-char *getCheck(struct GameState *game); // returns "0" if not and the piece if the king is in check
+struct StringArray addRawMoves(struct GameState *game); // compiles all moves into one string array
+
+// 0 if no check
+// 1 if white is in check
+// -1 if black is in check
+int getCheck(struct GameState *game);
 
 struct StringArray getAllMoves(struct GameState *game); // returns the NULL struct if checkmate
 
