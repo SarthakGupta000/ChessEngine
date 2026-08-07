@@ -49,6 +49,8 @@ struct StringArray addRawMoves(struct GameState *game); // compiles all moves in
 // -1 if black is in check
 int getCheck(struct GameState *game);
 
+void makeMove(int board[8][8], char *move);
+
 struct StringArray getAllMoves(struct GameState *game); // returns the NULL struct if checkmate
 
 void run();

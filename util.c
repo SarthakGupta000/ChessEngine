@@ -715,3 +715,98 @@ int getCheck(struct GameState *game) {
     }
     return 0;
 }
+
+void makeMove(int board[8][8], char *move) {
+    int posx = getNum(move[1]);
+    int posy = getNum(move[2]);
+    int tox = getNum(move[3]);
+    int toy = getNum(move[4]);
+    board[toy][tox] = board[posy][posx];
+    board[posy][posx] = 0;
+}
+
+struct StringArray getAllMoves(struct GameState *game) {
+    int check = getCheck(game);
+    struct GameState gamecopy;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            gamecopy.board[y][x] = game->board[y][x];
+        }
+    }
+    gamecopy.turn = game->turn;
+    struct StringArray rawMoves = addRawMoves(game);
+    if (check == game->turn) {
+        int numOfMoves = rawMoves.size;
+        for (int i = 0; i < rawMoves.size; i++) {
+            makeMove(gamecopy.board, rawMoves.arr[i]);
+            if (getCheck(&gamecopy) != game->turn) {
+                numOfMoves++;
+            }
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 8; x++) {
+                    gamecopy.board[y][x] = game->board[y][x];
+                }
+            }
+        }
+        struct StringArray moves;
+        moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
+        moves.size = numOfMoves;
+        for (int i = 0; i < numOfMoves; i++) {
+            moves.arr[i] = (char *) malloc(sizeof(char) * 6);
+        }
+        int next = 0;
+        for (int i = 0; i < rawMoves.size; i++) {
+            makeMove(gamecopy.board, rawMoves.arr[i]);
+            if (getCheck(&gamecopy) != game->turn) {
+                (void) strcpy(moves.arr[next], rawMoves.arr[i]);
+                next++;
+            }
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 8; x++) {
+                    gamecopy.board[y][x] = game->board[y][x];
+                }
+            }
+        }
+        for (int i = 0; i < rawMoves.size; i++) {
+            free(rawMoves.arr[i]);
+        }
+        free(rawMoves.arr);
+        return moves;
+    }
+    int numOfMoves = 0;
+    for (int i = 0; i < rawMoves.size; i++) {
+        makeMove(gamecopy.board, rawMoves.arr[i]);
+        if (getCheck(&gamecopy) != game->turn) { // does not handle edge cases
+            numOfMoves++;
+        }
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                gamecopy.board[y][x] = game->board[y][x];
+            }
+        }
+    }
+    struct StringArray moves;
+    moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
+    moves.size = numOfMoves;
+    for (int i = 0; i < numOfMoves; i++) {
+        moves.arr[i] = (char *) malloc(sizeof(char) * 6);
+    }
+    int next = 0;
+    for (int i = 0; i < rawMoves.size; i++) {
+        makeMove(gamecopy.board, rawMoves.arr[i]);
+        if (getCheck(&gamecopy) != game->turn) { // does not handle edge cases
+            (void) strcpy(moves.arr[next], rawMoves.arr[i]);
+            next++;
+        }
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                gamecopy.board[y][x] = game->board[y][x];
+            }
+        }
+    }
+    for (int i = 0; i < rawMoves.size; i++) {
+        free(rawMoves.arr[i]);
+    }
+    free(rawMoves.arr);
+    return moves;
+}
