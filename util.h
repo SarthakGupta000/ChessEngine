@@ -53,4 +53,6 @@ void makeMove(int board[8][8], char *move);
 
 struct StringArray getAllMoves(struct GameState *game); // returns the NULL struct if checkmate
 
+void cpyAllMoves(struct StringArray *moves, struct GameState *game);
+
 void run();
