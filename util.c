@@ -655,64 +655,37 @@ struct StringArray addRawMoves(struct GameState *game) {
     return moves;
 }
 
+// returns 1 if the game turn is in check
+// otherwise 0
 int getCheck(struct GameState *game) {
-    int var = game->turn;
-    int check = 0;
-    // checker = black
-    game->turn = -1;
+    game->turn *= -1;
+    struct StringArray moves = addRawMoves(game);
+    game->turn *= -1;
     int kingx;
     int kingy;
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
-            if (game->turn * -10 == game->board[y][x]) {
+            if (game->turn * 10 == game->board[y][x]) {
                 kingx = x;
                 kingy = y;
             }
         }
     }
-    struct StringArray allBlackMoves = addRawMoves(game);
-    for (int i = 0; i < allBlackMoves.size; i++) {
-        int x = getNum(allBlackMoves.arr[i][3]);
-        int y = getNum(allBlackMoves.arr[i][4]);
-        if (y == kingy && x == kingx) {
-            check = game->turn * -1;
-        }
-    }
-    for (int i = 0; i < allBlackMoves.size; i++) {
-        free(allBlackMoves.arr[i]);
-    }
-    free(allBlackMoves.arr);
-    game->turn = var;
-    if (check != 0) {
-        return check;
-    }
-    // checker = white
-    check = 0;
-    game->turn = 1;
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
-            if (game->turn * -10 == game->board[y][x]) {
-                kingx = x;
-                kingy = y;
+    for (int i = 0; i < moves.size; i++) {
+        int x = moves.arr[i][3];
+        int y = moves.arr[i][4];
+        if (x != kingx || y != kingy) {
+            for (int j = 0; j < moves.size; j++) {
+                free(moves.arr[j]);
             }
+            free(moves.arr);
+            return 1;
         }
     }
-    struct StringArray allWhiteMoves = addRawMoves(game);
-    for (int i = 0; i < allWhiteMoves.size; i++) {
-        int x = getNum(allWhiteMoves.arr[i][3]);
-        int y = getNum(allWhiteMoves.arr[i][4]);
-        if (y == kingy && x == kingx) {
-            check = game->turn * -1;
-        }
+    for (int j = 0; j < moves.size; j++) {
+        free(moves.arr[j]);
     }
-    for (int i = 0; i < allWhiteMoves.size; i++) {
-        free(allWhiteMoves.arr[i]);
-    }
-    free(allWhiteMoves.arr);
-    game->turn = var;
-    if (check != 0) {
-        return check;
-    }
+    free(moves.arr);
     return 0;
 }
 
@@ -726,87 +699,43 @@ void makeMove(int board[8][8], char *move) {
 }
 
 struct StringArray getAllMoves(struct GameState *game) {
-    int check = getCheck(game);
-    struct GameState gamecopy;
+    struct StringArray moves = addRawMoves(game);
+    int boardcpy[8][8];
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
-            gamecopy.board[y][x] = game->board[y][x];
+            boardcpy[y][x] = game->board[y][x];
         }
-    }
-    gamecopy.turn = game->turn;
-    struct StringArray rawMoves = addRawMoves(game);
-    if (check == game->turn) {
-        int numOfMoves = rawMoves.size;
-        for (int i = 0; i < rawMoves.size; i++) {
-            makeMove(gamecopy.board, rawMoves.arr[i]);
-            if (getCheck(&gamecopy) != game->turn) {
-                numOfMoves++;
-            }
-            for (int y = 0; y < 8; y++) {
-                for (int x = 0; x < 8; x++) {
-                    gamecopy.board[y][x] = game->board[y][x];
-                }
-            }
-        }
-        struct StringArray moves;
-        moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
-        moves.size = numOfMoves;
-        for (int i = 0; i < numOfMoves; i++) {
-            moves.arr[i] = (char *) malloc(sizeof(char) * 6);
-        }
-        int next = 0;
-        for (int i = 0; i < rawMoves.size; i++) {
-            makeMove(gamecopy.board, rawMoves.arr[i]);
-            if (getCheck(&gamecopy) != game->turn) {
-                (void) strcpy(moves.arr[next], rawMoves.arr[i]);
-                next++;
-            }
-            for (int y = 0; y < 8; y++) {
-                for (int x = 0; x < 8; x++) {
-                    gamecopy.board[y][x] = game->board[y][x];
-                }
-            }
-        }
-        for (int i = 0; i < rawMoves.size; i++) {
-            free(rawMoves.arr[i]);
-        }
-        free(rawMoves.arr);
-        return moves;
     }
     int numOfMoves = 0;
-    for (int i = 0; i < rawMoves.size; i++) {
-        makeMove(gamecopy.board, rawMoves.arr[i]);
-        if (getCheck(&gamecopy) != game->turn) { // does not handle edge cases
+    for (int i = 0; i < moves.size; i++) {
+        makeMove(boardcpy, moves.arr[i]);
+        if (getCheck(game) == 0) {
             numOfMoves++;
         }
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                gamecopy.board[y][x] = game->board[y][x];
+                boardcpy[y][x] = game->board[y][x];
             }
         }
     }
-    struct StringArray moves;
-    moves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
-    moves.size = numOfMoves;
+    struct StringArray totalMoves;
+    totalMoves.arr = (char **) malloc(sizeof(char *) * numOfMoves);
+    totalMoves.size = numOfMoves;
     for (int i = 0; i < numOfMoves; i++) {
-        moves.arr[i] = (char *) malloc(sizeof(char) * 6);
+        totalMoves.arr[i] = (char *) malloc(sizeof(char) * 6);
     }
     int next = 0;
-    for (int i = 0; i < rawMoves.size; i++) {
-        makeMove(gamecopy.board, rawMoves.arr[i]);
-        if (getCheck(&gamecopy) != game->turn) { // does not handle edge cases
-            (void) strcpy(moves.arr[next], rawMoves.arr[i]);
+    for (int i = 0; i < moves.size; i++) {
+        makeMove(boardcpy, moves.arr[i]);
+        if (getCheck(game) == 0) {
+            (void) strcpy(totalMoves.arr[next], moves.arr[i]);
             next++;
         }
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                gamecopy.board[y][x] = game->board[y][x];
+                boardcpy[y][x] = game->board[y][x];
             }
         }
     }
-    for (int i = 0; i < rawMoves.size; i++) {
-        free(rawMoves.arr[i]);
-    }
-    free(rawMoves.arr);
-    return moves;
+    return totalMoves;
 }
