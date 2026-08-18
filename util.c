@@ -883,17 +883,47 @@ void cpyAllMoves(struct StringArray *moves, struct GameState *game) {
     free(newMoves.arr);
 }
 
+void printBoard(int board[8][8]) {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (board[y][x] < 0) {
+                printf("B");
+            }
+            else if (board[y][x] == 0) {
+                printf(".  ");
+                continue;
+            } else {
+                printf("W");
+            }
+            if (abs(board[y][x]) == 1) {
+                printf("p ");
+            }
+            if (abs(board[y][x]) == 3) {
+                printf("N ");
+            }
+            if (abs(board[y][x]) == 4) {
+                printf("B ");
+            }
+            if (abs(board[y][x]) == 5) {
+                printf("R ");
+            }
+            if (abs(board[y][x]) == 9) {
+                printf("Q ");
+            }
+            if (abs(board[y][x]) == 10) {
+                printf("K ");
+            }
+        }
+        printf("\n");
+    }
+}
+
 void run() {
     struct GameState *game = createGame();
     struct StringArray moves = getAllMoves(game);
     cpyAllMoves(&moves, game);
     while (1) {
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                (void) printf("%d ", game->board[y][x]);
-            }
-            (void) printf("\n");
-        }
+        printBoard(game->board);
         if (moves.size == 1000) {
             printf("Mate\n");
             goto jump;
