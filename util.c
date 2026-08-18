@@ -154,12 +154,12 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(x - 1, y + 1) == 0) {
-                        if (game->board[(y + 1)][(x - 1)] < 0) {
+                        if (game->board[(y + 1)][(x - 1)] > 0) {
                             numOfMoves++;
                         }
                     }
                     if (getOutOfBound(x + 1, y + 1) == 0) {
-                        if (game->board[(y + 1)][x + 1] < 0) {
+                        if (game->board[(y + 1)][x + 1] > 0) {
                             numOfMoves++;
                         }
                     }
@@ -204,7 +204,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(x - 1, y + 1) == 0) {
-                        if (game->board[(y + 1)][(x - 1)] < 0) {
+                        if (game->board[(y + 1)][(x - 1)] > 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
@@ -215,7 +215,7 @@ struct StringArray getPawnMoves(struct GameState *game) { // does not handle paw
                         }
                     }
                     if (getOutOfBound(x + 1, y + 1) == 0) {
-                        if (game->board[(y + 1)][x + 1] < 0) {
+                        if (game->board[(y + 1)][x + 1] > 0) {
                             moves.arr[next][0] = 'p';
                             moves.arr[next][1] = convert[x];
                             moves.arr[next][2] = convert[y];
@@ -772,8 +772,8 @@ int getCheck(struct GameState *game) {
         }
     }
     for (int i = 0; i < moves.size; i++) {
-        int x = moves.arr[i][3];
-        int y = moves.arr[i][4];
+        int x = getNum(moves.arr[i][3]);
+        int y = getNum(moves.arr[i][4]);
         if (x == kingx && y == kingy) {
             for (int j = 0; j < moves.size; j++) {
                 free(moves.arr[j]);
@@ -806,6 +806,7 @@ struct StringArray getAllMoves(struct GameState *game) {
             gamecpy->board[y][x] = game->board[y][x];
         }
     }
+    gamecpy->turn = game->turn;
     int numOfMoves = 0;
     for (int i = 0; i < moves.size; i++) {
         makeMove(gamecpy->board, moves.arr[i]);
