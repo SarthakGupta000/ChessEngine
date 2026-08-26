@@ -55,6 +55,8 @@ struct StringArray getAllMoves(struct GameState *game); // returns the NULL stru
 
 void cpyAllMoves(struct StringArray *moves, struct GameState *game);
 
+void clearStdout();
+
 void printBoard(int board[8][8]);
 
 void run();

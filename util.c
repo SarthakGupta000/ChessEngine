@@ -884,8 +884,15 @@ void cpyAllMoves(struct StringArray *moves, struct GameState *game) {
     free(newMoves.arr);
 }
 
+void clearStdout() {
+    printf("\033[H\033[J");
+    fflush(stdout);
+}
+
 void printBoard(int board[8][8]) {
+    clearStdout();
     for (int y = 0; y < 8; y++) {
+        printf("%d ", y);
         for (int x = 0; x < 8; x++) {
             if (board[y][x] < 0) {
                 printf("B");
@@ -917,6 +924,7 @@ void printBoard(int board[8][8]) {
         }
         printf("\n");
     }
+    printf("  0  1  2  3  4  5  6  7\n");
 }
 
 void run() {
