@@ -927,6 +927,52 @@ void printBoard(int board[8][8]) {
     printf("  0  1  2  3  4  5  6  7\n");
 }
 
+int minimaxEval(struct GameState *game, int iteration) {
+    if (iteration >= MAX_ITER) {
+        return aiEval(game); // uses advanced neural networks to figure out the position
+    }
+    struct StringArray moves = getAllMoves(game);
+    int boardcpy[8][8];
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            boardcpy[y][x] = game->board[y][x];
+        }
+    }
+    if (moves.arr == NULL) {
+        if (moves.size == 1000) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+    int n = moves.size;
+    int eval[n]; // i know that it is a VLA
+    for (int i = 0; i < moves.size; i++) {
+        makeMove(game->board, moves.arr[i]);
+        game->turn *= -1;
+        eval[i] = minimaxEval(game, iteration + 1) * -1; // to flip polarity
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                game->board[y][x] = boardcpy[y][x];
+            }
+        }
+        game->turn *= -1;
+    }
+    int g = eval[0];
+    for (int i = 0; i < n; i++) {
+        if (eval[i] > g) {
+            g = eval[i];
+        }
+    }
+    for (int i = 0; i < moves.size; i++) {
+        free(moves.arr[i]);
+        if (i == moves.size - 1) {
+            free(moves.arr);
+        }
+    }
+    return g;
+}
+
 void run() {
     struct GameState *game = createGame();
     struct StringArray moves = getAllMoves(game);

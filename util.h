@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define MAX_ITER 3
 
 /*
 -5 -3 -4 -9 -10 -4 -3 -5
@@ -58,5 +59,9 @@ void cpyAllMoves(struct StringArray *moves, struct GameState *game);
 void clearStdout();
 
 void printBoard(int board[8][8]);
+
+int aiEval(struct GameState *game);
+
+int minimaxEval(struct GameState *game, int iteration); // iteration must be zero at user call
 
 void run();
