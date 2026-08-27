@@ -927,7 +927,200 @@ void printBoard(int board[8][8]) {
     printf("  0  1  2  3  4  5  6  7\n");
 }
 
-int minimaxEval(struct GameState *game, int iteration) {
+double aiEval(struct GameState *game) {
+    double score = 0; // [-1, 1]
+    // checkmate or stalemate
+    struct StringArray moves = getAllMoves(game);
+    if (moves.arr == NULL) {
+        if (moves.size == 1000) {
+            return (double) -1;
+        } else {
+            return (double) 0;
+        }
+    }
+    for (int i = 0; i < moves.size; i++) {
+        free(moves.arr[i]);
+        if (i == moves.size - 1) {
+            free(moves.arr);
+        }
+    }
+    // material advantage
+    int sum = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            sum += game->board[y][x];
+        }
+    }
+    score += sum * 0.1;
+    if (score >= 1) {
+        score = 0.9; // maximum advantage
+    }
+    // development
+    struct StringArray bishop = getBishopMoves(game);
+    int n = bishop.size;
+    for (int i = 0; i < bishop.size; i++) {
+        free(bishop.arr[i]);
+        if (i + 1 == bishop.size) {
+            free(bishop.arr);
+        }
+    }
+    if (n > 12) {
+        score += 0.2;
+    } else {
+        score -= 0.2;
+    }
+    if (score >= 1) {
+        score = 0.9;
+    }
+    if (score <= -1) {
+        score = -0.9; // maximum disadvantage other than checkmate
+    }
+    struct StringArray knight = getKnightMoves(game);
+    n = knight.size;
+    for (int i = 0; i < knight.size; i++) {
+        free(knight.arr[i]);
+        if (i + 1 == knight.size) {
+            free(knight.arr);
+        }
+    }
+    if (n > 4) {
+        score += 0.2;
+    } else {
+        score -= 0.2;
+    }
+    if (score >= 1) {
+        score = 0.9;
+    }
+    if (score <= -1) {
+        score = -0.9; // maximum disadvantage other than checkmate
+    }
+    struct StringArray rook = getRookMoves(game);
+    n = rook.size;
+    for (int i = 0; i < rook.size; i++) {
+        free(rook.arr[i]);
+        if (i + 1 == rook.size) {
+            free(rook.arr);
+        }
+    }
+    if (n > 4) {
+        score += 0.2;
+    } else {
+        score -= 0.2;
+    }
+    if (score >= 1) {
+        score = 0.9;
+    }
+    if (score <= -1) {
+        score = -0.9; // maximum disadvantage other than checkmate
+    }
+    struct StringArray queen = getQueenMoves(game);
+    n = queen.size;
+    for (int i = 0; i < queen.size; i++) {
+        free(queen.arr[i]);
+        if (i + 1 == queen.size) {
+            free(queen.arr);
+        }
+    }
+    if (n > 4) {
+        score += 0.2;
+    } else {
+        score -= 0.2;
+    }
+    if (score >= 1) {
+        score = 0.9;
+    }
+    if (score <= -1) {
+        score = -0.9; // maximum disadvantage other than checkmate
+    }
+    // king safety
+    int kingOffsets[8][2] = {
+        {0, 1},
+        {0, -1},
+        {1, 0},
+        {-1, 0},
+        {1, 1},
+        {-1, 1},
+        {1, -1},
+        {-1, -1}
+    };
+    int kingx;
+    int kingy;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->board[y][x] == game->turn * 10) {
+                kingy = y;
+                kingx = x;
+                goto jump;
+            }
+        }
+    }
+    jump:;
+    sum = 0;
+    for (int i = 0; i < 8; i++) {
+        int x = kingx + kingOffsets[i][0];
+        int y = kingy + kingOffsets[i][1];
+        if (game->board[y][x] == 0) {
+            sum++;
+        }
+    }
+    if (sum > 3) {
+        score -= 0.3;
+    }
+    if (score <= -1) {
+        score = 0.9;
+    }
+    // pawn activity
+    int num = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->board[y][x] == game->turn) {
+                num++;
+            }
+        }
+    }
+    int pawny[num];
+    int next = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (game->board[y][x] == game->turn) {
+                pawny[next] = y;
+                next++;
+            }
+        }
+    }
+    int g = 0;
+    for (int i = 0; i < num; i++) {
+        if (pawny[i] > pawny[g]) {
+            g = i;
+        }
+    }
+    score += pawny[g] * 0.025;
+    // starting position
+    int boardcpy[8][8] = {
+        {-5, -3, -4, -9, -10, -4, -3, -5},
+        {-1, -1, -1, -1, -1, -1, -1, -1},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {1, 1, 1, 1, 1, 1, 1, 1},
+        {5, 3, 4, 9, 10, 4, 3, 5}
+    };
+    sum = 0;
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (boardcpy[y][x] == game->board[y][x]) {
+                sum++;
+            }
+        }
+    }
+    if (sum == 64) {
+        score = 0;
+    }
+    return score;
+}
+
+double minimaxEval(struct GameState *game, int iteration) {
     if (iteration >= MAX_ITER) {
         return aiEval(game); // uses advanced neural networks to figure out the position
     }
@@ -940,13 +1133,13 @@ int minimaxEval(struct GameState *game, int iteration) {
     }
     if (moves.arr == NULL) {
         if (moves.size == 1000) {
-            return -1;
+            return (double) -1;
         } else {
-            return 0;
+            return (double) 0;
         }
     }
     int n = moves.size;
-    int eval[n]; // i know that it is a VLA
+    double eval[n]; // i know that it is a VLA
     for (int i = 0; i < moves.size; i++) {
         makeMove(game->board, moves.arr[i]);
         game->turn *= -1;
@@ -958,7 +1151,7 @@ int minimaxEval(struct GameState *game, int iteration) {
         }
         game->turn *= -1;
     }
-    int g = eval[0];
+    double g = eval[0];
     for (int i = 0; i < n; i++) {
         if (eval[i] > g) {
             g = eval[i];
@@ -971,6 +1164,42 @@ int minimaxEval(struct GameState *game, int iteration) {
         }
     }
     return g;
+}
+
+void makeComputerMove(struct GameState *game) {
+    struct StringArray moves = getAllMoves(game); // checkmate or stalemate would be already detected
+    if (moves.arr == NULL) {
+        return;
+    }
+    double eval[moves.size];
+    int boardcpy[8][8];
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            boardcpy[y][x] = game->board[y][x];
+        }
+    }
+    for (int i = 0; i < moves.size; i++) {
+        makeMove(game->board, moves.arr[i]);
+        eval[i] = minimaxEval(game, 0); // for the computer
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                game->board[y][x] = boardcpy[y][x];
+            }
+        }
+    }
+    int g = 0;
+    for (int i = 0; i < moves.size; i++) {
+        if (eval[i] > eval[g]) {
+            g = i;
+        }
+    }
+    makeMove(game->board, moves.arr[g]);
+    for (int i = 0; i < moves.size; i++) {
+        free(moves.arr[i]);
+        if (i + 1 == moves.size) {
+            free(moves.arr);
+        }
+    }
 }
 
 void run() {
@@ -1003,6 +1232,8 @@ void run() {
             goto jump;
         }
         makeMove(game->board, move);
+        game->turn *= -1;
+        makeComputerMove(game);
         game->turn *= -1;
         cpyAllMoves(&moves, game);
     }
