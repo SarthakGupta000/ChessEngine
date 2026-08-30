@@ -927,7 +927,9 @@ void printBoard(int board[8][8]) {
     printf("  0  1  2  3  4  5  6  7\n");
 }
 
-double aiEval(struct GameState *game) {
+double aiEval(struct GameState *game) { // has to be only for the computer
+    int turn = game->turn;
+    game->turn = -1;
     double score = 0; // [-1, 1]
     // checkmate or stalemate
     struct StringArray moves = getAllMoves(game);
@@ -948,7 +950,7 @@ double aiEval(struct GameState *game) {
     int sum = 0;
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
-            sum += game->board[y][x];
+            sum -= game->board[y][x];
         }
     }
     score += sum * 0.1;
@@ -958,16 +960,20 @@ double aiEval(struct GameState *game) {
     // development
     struct StringArray bishop = getBishopMoves(game);
     int n = bishop.size;
-    for (int i = 0; i < bishop.size; i++) {
-        free(bishop.arr[i]);
-        if (i + 1 == bishop.size) {
-            free(bishop.arr);
+    if (bishop.arr != NULL) {
+        for (int i = 0; i < bishop.size; i++) {
+            free(bishop.arr[i]);
+            if (i + 1 == bishop.size) {
+                free(bishop.arr);
+            }
         }
-    }
-    if (n > 12) {
-        score += 0.2;
     } else {
-        score -= 0.2;
+        n = 0;
+    }
+    if (n > 5) {
+        score += 0.15;
+    } else {
+        score -= 0.05;
     }
     if (score >= 1) {
         score = 0.9;
@@ -977,16 +983,20 @@ double aiEval(struct GameState *game) {
     }
     struct StringArray knight = getKnightMoves(game);
     n = knight.size;
-    for (int i = 0; i < knight.size; i++) {
-        free(knight.arr[i]);
-        if (i + 1 == knight.size) {
-            free(knight.arr);
+    if (knight.arr != NULL) {
+        for (int i = 0; i < knight.size; i++) {
+            free(knight.arr[i]);
+            if (i + 1 == knight.size) {
+                free(knight.arr);
+            }
         }
+    } else {
+        n = 0;
     }
     if (n > 4) {
-        score += 0.2;
+        score += 0.25;
     } else {
-        score -= 0.2;
+        score -= 0.15;
     }
     if (score >= 1) {
         score = 0.9;
@@ -996,16 +1006,20 @@ double aiEval(struct GameState *game) {
     }
     struct StringArray rook = getRookMoves(game);
     n = rook.size;
-    for (int i = 0; i < rook.size; i++) {
-        free(rook.arr[i]);
-        if (i + 1 == rook.size) {
-            free(rook.arr);
+    if (rook.arr != NULL) {
+        for (int i = 0; i < rook.size; i++) {
+            free(rook.arr[i]);
+            if (i + 1 == rook.size) {
+                free(rook.arr);
+            }
         }
+    } else {
+        n = 0;
     }
     if (n > 4) {
-        score += 0.2;
+        score += 0.15;
     } else {
-        score -= 0.2;
+        score -= 0.05;
     }
     if (score >= 1) {
         score = 0.9;
@@ -1015,16 +1029,20 @@ double aiEval(struct GameState *game) {
     }
     struct StringArray queen = getQueenMoves(game);
     n = queen.size;
-    for (int i = 0; i < queen.size; i++) {
-        free(queen.arr[i]);
-        if (i + 1 == queen.size) {
-            free(queen.arr);
+    if (queen.arr != NULL) {
+        for (int i = 0; i < queen.size; i++) {
+            free(queen.arr[i]);
+            if (i + 1 == queen.size) {
+                free(queen.arr);
+            }
         }
+    } else {
+        n = 0;
     }
     if (n > 4) {
-        score += 0.2;
+        score += 0.15;
     } else {
-        score -= 0.2;
+        score -= 0.05;
     }
     if (score >= 1) {
         score = 0.9;
@@ -1033,41 +1051,23 @@ double aiEval(struct GameState *game) {
         score = -0.9; // maximum disadvantage other than checkmate
     }
     // king safety
-    int kingOffsets[8][2] = {
-        {0, 1},
-        {0, -1},
-        {1, 0},
-        {-1, 0},
-        {1, 1},
-        {-1, 1},
-        {1, -1},
-        {-1, -1}
-    };
-    int kingx;
-    int kingy;
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
-            if (game->board[y][x] == game->turn * 10) {
-                kingy = y;
-                kingx = x;
-                goto jump;
+    struct StringArray kingMoves = getKingMoves(game);
+    n = kingMoves.size;
+    if (kingMoves.arr != NULL) {
+        for (int i = 0; i < kingMoves.size; i++) {
+            free(kingMoves.arr[i]);
+            if (i + 1 == kingMoves.size) {
+                free(kingMoves.arr);
             }
         }
+    } else {
+        n = 0;
     }
-    jump:;
-    sum = 0;
-    for (int i = 0; i < 8; i++) {
-        int x = kingx + kingOffsets[i][0];
-        int y = kingy + kingOffsets[i][1];
-        if (game->board[y][x] == 0) {
-            sum++;
-        }
-    }
-    if (sum > 3) {
+    if (n > 2) {
         score -= 0.3;
     }
     if (score <= -1) {
-        score = 0.9;
+        score = -0.9;
     }
     // pawn activity
     int num = 0;
@@ -1078,23 +1078,34 @@ double aiEval(struct GameState *game) {
             }
         }
     }
-    int pawny[num];
-    int next = 0;
+    int pawnSum = 0;
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
             if (game->board[y][x] == game->turn) {
-                pawny[next] = y;
-                next++;
+                pawnSum += y;
             }
         }
     }
-    int g = 0;
-    for (int i = 0; i < num; i++) {
-        if (pawny[i] > pawny[g]) {
-            g = i;
+    score += pawnSum * 0.005;
+    if (pawnSum < 12) {
+        score -= 0.5;
+    }
+    int centre[4][2] = {
+        {3, 4},
+        {3, 3},
+        {4, 4},
+        {4, 3}
+    };
+    sum = 0;
+    for (int i = 0; i < 4; i++) {
+        if (game->board[centre[i][1]][centre[i][0]] > -2 && game->board[centre[i][1]][centre[i][0]] < 2) {
+            sum -= game->board[centre[i][1]][centre[i][0]];
         }
     }
-    score += pawny[g] * 0.025;
+    score += sum * 0.1;
+    if (sum == 0) {
+        score -= 0.1;
+    }
     // starting position
     int boardcpy[8][8] = {
         {-5, -3, -4, -9, -10, -4, -3, -5},
@@ -1117,53 +1128,68 @@ double aiEval(struct GameState *game) {
     if (sum == 64) {
         score = 0;
     }
+    game->turn = turn;
     return score;
 }
 
+// computer = maximizer
+// user = minimizer
 double minimaxEval(struct GameState *game, int iteration) {
-    if (iteration >= MAX_ITER) {
-        return aiEval(game); // uses advanced neural networks to figure out the position
+    if (iteration == MAX_ITER) {
+        int var = game->turn;
+        game->turn = -1;
+        double eval = aiEval(game);
+        game->turn = var;
+        return eval;
     }
     struct StringArray moves = getAllMoves(game);
+    if (moves.arr == NULL) {
+        if (moves.size == 1000) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
     int boardcpy[8][8];
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
             boardcpy[y][x] = game->board[y][x];
         }
     }
-    if (moves.arr == NULL) {
-        if (moves.size == 1000) {
-            return (double) -1;
-        } else {
-            return (double) 0;
-        }
-    }
-    int n = moves.size;
-    double eval[n]; // i know that it is a VLA
+    double eval[moves.size];
     for (int i = 0; i < moves.size; i++) {
         makeMove(game->board, moves.arr[i]);
         game->turn *= -1;
-        eval[i] = minimaxEval(game, iteration + 1) * -1; // to flip polarity
+        eval[i] = minimaxEval(game, iteration + 1);
+        game->turn *= -1;
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 game->board[y][x] = boardcpy[y][x];
             }
         }
-        game->turn *= -1;
     }
-    double g = eval[0];
-    for (int i = 0; i < n; i++) {
-        if (eval[i] > g) {
-            g = eval[i];
+    int val = 0;
+    for (int i = 0; i < moves.size; i++) {
+        if (game->turn == 1) {
+            if (eval[i] < eval[val]) {
+                val = i;
+                continue;
+            }
+        }
+        if (game->turn == -1) {
+            if (eval[i] > eval[val]) {
+                val = i;
+                continue;
+            }
         }
     }
-    for (int i = 0; i < moves.size; i++) {
-        free(moves.arr[i]);
-        if (i == moves.size - 1) {
+    for (int j = 0; j < moves.size; j++) {
+        free(moves.arr[j]);
+        if (j + 1 == moves.size) {
             free(moves.arr);
         }
     }
-    return g;
+    return eval[val];
 }
 
 void makeComputerMove(struct GameState *game) {
