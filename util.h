@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#define MAX_ITER 2
+#define MAX_ITER 3
 
 /*
 -5 -3 -4 -9 -10 -4 -3 -5
