@@ -1085,6 +1085,15 @@ void run() {
         }
         makeMove(game->board, move);
         game->turn *= -1;
+        cpyAllMoves(&moves, game);
+        if (moves.size == 1000) {
+            printf("Mate\n");
+            goto jump;
+        } 
+        if (moves.size == 2000) {
+            printf("Stalemate\n");
+            goto jump;
+        }
         makeComputerMove(game);
         game->turn *= -1;
         cpyAllMoves(&moves, game);
