@@ -942,13 +942,16 @@ double aiEval(struct GameState *game) { // has to be only for the computer
     if (score >= 1) {
         score = 0.9; // maximum advantage
     }
+    if (score <= -1) {
+        score = -0.9;
+    }
     game->turn = turn;
     return score;
 }
 
 // computer = maximizer
 // user = minimizer
-double minimaxEval(struct GameState *game, int iteration) {
+double minimaxEval(struct GameState *game, int iteration, double alpha, double beta) {
     if (iteration == MAX_ITER) {
         int var = game->turn;
         game->turn = -1;
@@ -959,7 +962,7 @@ double minimaxEval(struct GameState *game, int iteration) {
     struct StringArray moves = getAllMoves(game);
     if (moves.arr == NULL) {
         if (moves.size == 1000) {
-            return -1;
+            return game->turn == -1 ? -1 : 1;
         } else {
             return 0;
         }
@@ -970,40 +973,47 @@ double minimaxEval(struct GameState *game, int iteration) {
             boardcpy[y][x] = game->board[y][x];
         }
     }
-    double eval[moves.size];
-    for (int i = 0; i < moves.size; i++) {
-        makeMove(game->board, moves.arr[i]);
-        game->turn *= -1;
-        eval[i] = minimaxEval(game, iteration + 1);
-        game->turn *= -1;
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                game->board[y][x] = boardcpy[y][x];
+    if (game->turn == -1) {
+        for (int i = 0; i < moves.size; i++) {
+            makeMove(game->board, moves.arr[i]);
+            game->turn *= -1;
+            double val = minimaxEval(game, iteration + 1, alpha, beta);
+            game->turn *= -1;
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 8; x++) {
+                    game->board[y][x] = boardcpy[y][x];
+                }
+            }
+            if (val > alpha) {
+                alpha = val;
+            }
+            if (alpha >= beta) {
+                break; // pruned
             }
         }
+        return alpha;
     }
-    int val = 0;
-    for (int i = 0; i < moves.size; i++) {
-        if (game->turn == 1) {
-            if (eval[i] < eval[val]) {
-                val = i;
-                continue;
+    if (game->turn == 1) {
+        for (int i = 0; i < moves.size; i++) {
+            makeMove(game->board, moves.arr[i]);
+            game->turn *= -1;
+            double val = minimaxEval(game, iteration + 1, alpha, beta);
+            game->turn *= -1;
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 8; x++) {
+                    game->board[y][x] = boardcpy[y][x];
+                }
+            }
+            if (val < beta) {
+                beta = val;
+            }
+            if (alpha >= beta) {
+                break; // pruned
             }
         }
-        if (game->turn == -1) {
-            if (eval[i] > eval[val]) {
-                val = i;
-                continue;
-            }
-        }
+        return beta;
     }
-    for (int j = 0; j < moves.size; j++) {
-        free(moves.arr[j]);
-        if (j + 1 == moves.size) {
-            free(moves.arr);
-        }
-    }
-    return eval[val];
+    return 0.0;
 }
 
 void makeComputerMove(struct GameState *game) {
@@ -1020,7 +1030,9 @@ void makeComputerMove(struct GameState *game) {
     }
     for (int i = 0; i < moves.size; i++) {
         makeMove(game->board, moves.arr[i]);
-        eval[i] = minimaxEval(game, 0); // for the computer
+        game->turn *= -1;
+        eval[i] = minimaxEval(game, 0, -INF, INF); // for the computer
+        game->turn *= -1;
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 game->board[y][x] = boardcpy[y][x];

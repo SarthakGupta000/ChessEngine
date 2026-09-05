@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#define MAX_ITER 3
+#define MAX_ITER 4
+#define INF 100.0
 
 /*
 -5 -3 -4 -9 -10 -4 -3 -5
@@ -62,7 +63,7 @@ void printBoard(int board[8][8]);
 
 double aiEval(struct GameState *game);
 
-double minimaxEval(struct GameState *game, int iteration); // iteration must be zero at user call
+double minimaxEval(struct GameState *game, int iteration, double alpha, double beta); // iteration must be zero at user call
 
 void makeComputerMove(struct GameState *game);
 
