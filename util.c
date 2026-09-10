@@ -949,23 +949,32 @@ double aiEval(struct GameState *game) { // has to be only for the computer
     return score;
 }
 
-// computer = maximizer
-// user = minimizer
+// computer = maximizer = -1
+// user = minimizer = 1
+// largest value = +-1
 double minimaxEval(struct GameState *game, int iteration, double alpha, double beta) {
+    struct StringArray moves = getAllMoves(game);
+    if (moves.arr == NULL) {
+        if (moves.size == 1000) {
+            return game->turn == -1 ? -1 + (iteration * 0.001) : 1 - (iteration * 0.001); // fastest checkmate
+        } else {
+            return 0.0;
+        }
+    }
     if (iteration == MAX_ITER) {
         int var = game->turn;
         game->turn = -1;
         double eval = aiEval(game);
         game->turn = var;
-        return eval;
-    }
-    struct StringArray moves = getAllMoves(game);
-    if (moves.arr == NULL) {
-        if (moves.size == 1000) {
-            return game->turn == -1 ? -1 : 1;
-        } else {
-            return 0;
+        if (moves.arr != NULL) {
+            for (int i = 0; i < moves.size; i++) {
+                free(moves.arr[i]);
+                if (i + 1 == moves.size) {
+                    free(moves.arr);
+                }
+            }
         }
+        return eval;
     }
     int boardcpy[8][8];
     for (int y = 0; y < 8; y++) {
@@ -991,6 +1000,14 @@ double minimaxEval(struct GameState *game, int iteration, double alpha, double b
                 break; // pruned
             }
         }
+        if (moves.arr != NULL) {
+            for (int i = 0; i < moves.size; i++) {
+                free(moves.arr[i]);
+                if (i + 1 == moves.size) {
+                    free(moves.arr);
+                }
+            }
+        }
         return alpha;
     }
     if (game->turn == 1) {
@@ -1009,6 +1026,14 @@ double minimaxEval(struct GameState *game, int iteration, double alpha, double b
             }
             if (alpha >= beta) {
                 break; // pruned
+            }
+        }
+        if (moves.arr != NULL) {
+            for (int i = 0; i < moves.size; i++) {
+                free(moves.arr[i]);
+                if (i + 1 == moves.size) {
+                    free(moves.arr);
+                }
             }
         }
         return beta;
